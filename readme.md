@@ -1,3 +1,6 @@
+# Status  Badge
+[![Build Status](https://app.travis-ci.com/VeranoSA/avo_shopper.svg?branch=main)](https://app.travis-ci.com/VeranoSA/avo_shopper)
+
 # Avo shopper
 
 It’s avocado season and there are special offers everywhere. Help your friends to keep track of finding the cheapest avos by creating a little web app using the supplied Factory Function in `avo-shopper.js`.
