@@ -1,9 +1,9 @@
 const express = require('express');
-const exphbs  = require('express-handlebars');
+const {engine}  = require('express-handlebars');
 const helperFunction = require('./avo-shopper');
 
 const app = express();
-const PORT =  process.env.PORT || 3023;
+const PORT =  process.env.PORT || 3011;
 
 const {
     Pool
@@ -15,7 +15,7 @@ const connectionString = process.env.DATABASE_URL || 'postgresql://coder:12345@l
 if(process.env.DATABASE_URL){
     ssl = { rejectUnauthorized: false }
 }
-
+//Set up an configuration on were we want to connect the database
 const pool = new Pool({
     connectionString,
     ssl
@@ -32,30 +32,35 @@ app.use(express.static('public'));
 
 // add more middleware to allow for templating support
 
-app.engine('handlebars', exphbs.engine());
+app.engine('handlebars', engine({
+    defaultLayout: 'main', layoutsDir: `${__dirname}/views/layouts`
+}));
+
 app.set('view engine', 'handlebars');
 
+//List my top five deals 
 app.get('/', async function(req, res) {
-	const shops = await avoFunction.listShops();
+	const topFiveDeal = await avoFunction.topFiveDeals();
 	res.render('index', {
-		shops
+		topDeal: topFiveDeal
 	});
 });
 
-app.get('/shop/add', function(req, res) {
-
-	res.render('/shop/add');
+//List all shops selling avo
+app.get('/shops', async function(req, res) {
+	const listShops = await avoFunction.listShops();
+	res.render('index', {
+		listShops
+	});
 });
 
-app.get('/shop/edit', function(req, res) {
-	res.render('/shop/edit');
-});
+//Create/
 
-app.post('/shop/add', function(req, res) {
+/*app.post('/shop/add', function(req, res) {
 	avoFunction.createShop();
 	res.redirect('/');
 });
-
+*/
 // start  the server and start listening for HTTP request on the PORT number specified...
 app.listen(PORT, function() {
 	console.log(`AvoApp started on port ${PORT}`)
