@@ -1,24 +1,23 @@
 const express = require('express');
-const {engine}  = require('express-handlebars');
+const { engine } = require('express-handlebars');
 const helperFunction = require('./avo-shopper');
 
 const app = express();
-const PORT =  process.env.PORT || 3070;
+const PORT = process.env.PORT || 3950;
 
 const {
-    Pool
+	Pool
 } = require('pg');
 
-let ssl = false
-const connectionString = process.env.DATABASE_URL || 'postgresql://coder:12345@localhost:5432/myavo';
 
-if(process.env.DATABASE_URL){
-    ssl = { rejectUnauthorized: false }
-}
+const connectionString = 'postgres://iioxprfdwwlqeb:79c4e1fcbda4b467547787ea5e1efa788c384aeac9ec0d2bef4a32d9b7c07484@ec2-34-202-66-20.compute-1.amazonaws.com:5432/dbe2rq0k8lig6m';
+
 //Set up an configuration on were we want to connect the database
 const pool = new Pool({
-    connectionString,
-    ssl
+	connectionString,
+	ssl: {
+		rejectUnauthorized: false,
+	}
 });
 
 const avoFunction = helperFunction(pool);
@@ -33,35 +32,53 @@ app.use(express.static('public'));
 // add more middleware to allow for templating support
 
 app.engine('handlebars', engine({
-    defaultLayout: 'main', layoutsDir: `${__dirname}/views/layouts`
+	defaultLayout: 'main', layoutsDir: `${__dirname}/views/layouts`
 }));
 
 app.set('view engine', 'handlebars');
 
 //List my top five deals 
-app.get('/', async function(req, res) {
-	const topFiveDeal = await avoFunction.topFiveDeals();
-	res.render('index', {
-		topDeal: topFiveDeal
-	});
+app.get('/', async function (req, res) {
+	res.render('index', { topDeal: await avoFunction.topFiveDeals() });
 });
 
-//List all shops selling avo
-app.get('/shops', async function(req, res) {
-	const listShops = await avoFunction.listShops();
-	res.render('index', {
-		listShops
-	});
-});
+//Add New Avo Deals
+app.get('/newDeal', async function (req, res) {
+	const shops = await avoFunction.listShops();
+	res.render('addDeal', { shops });
+})
 
-//Create/
-
-/*app.post('/shop/add', function(req, res) {
-	avoFunction.createShop();
+app.post('/newDeal', async function (req, res) {
+	await avoFunction.createDeal(req.body.shops, req.body.dealQty, req.body.dealPrice);
 	res.redirect('/');
-});
-*/
+})
+
+//Avo Deals For a given shop 
+app.get('/show/:name/:shop', async function (req, res) {
+	req.params.shop++;
+	const avoDeals = await avoFunction.dealsForShop(req.params.shop);
+	res.render('index', { avoDeals, name: req.params.name });
+})
+
+//Add a new shop with first letter upercase
+app.post('/shops', async function (req, res) {
+	let input = req.body.addshopInfo;
+	let shopName = input[0].toUpperCase() + input.slice(1).toLowerCase();
+	await avoFunction.createShop(shopName)
+	res.redirect('/shops');
+})
+
+//List all shops
+app.get('/shops', async function (req, res) {
+	const shopList = await avoFunction.listShops();
+	res.render('viewShops', { shopList });
+})
+
+app.get('/addShops', async function (req, res) {
+	res.render('addShop');
+})
+
 // start  the server and start listening for HTTP request on the PORT number specified...
-app.listen(PORT, function() {
+app.listen(PORT, function () {
 	console.log(`AvoApp started on port ${PORT}`)
 });

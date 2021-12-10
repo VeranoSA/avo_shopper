@@ -3,19 +3,21 @@
 
         <div class="pure-g">
             <div class="l-box-lrg pure-u-1 pure-u-md-2-5">
-                <form class="pure-form pure-form-stacked" action="/newDeal" methode="post">
+                <form class="pure-form pure-form-stacked" action="/newDeal" method="post">
                     <fieldset>
-                        <select>
+                        <div>
+                            <label for="">Choose Shop Name:</label>
+                        <select name="shops">
                             {{#each shops}}
                             <option value="{{this.id}}">{{this.name}}</option>
                         {{/each}}
                         </select>
-
-                        <label for="dealQty">Quantity</label>
+                        </div>
+                        <label for="dealQty">Quantity:</label>
                         <input id="name" type="number" name="dealQty" placeholder="Enter Quantity">
 
 
-                        <label for="dealPrice">Price</label>
+                        <label for="dealPrice">Price:</label>
                         <input id="email" type="number" name="dealPrice" placeholder="Enter Quantity">
 
                         <button type="submit" class="pure-button">Add Deal</button>
